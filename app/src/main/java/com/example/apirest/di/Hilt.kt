@@ -1,6 +1,7 @@
 package com.example.apirest.di
 
-import com.example.apirest.service.ApiService
+
+import com.example.apirest.service.PokemonApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,15 +19,15 @@ object NetworkModule{
     @Singleton
     fun provideRetrofit(): Retrofit{
         return Retrofit.Builder()
-            .baseUrl( "https://pokeapi.co/api/v2/pokemon/ditto" )
+            .baseUrl( "https://pokeapi.co/api/v2/" )
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
 
     @Provides
     @Singleton
-    fun provideApiService(retrofit: Retrofit): ApiService{
-       return retrofit.create(ApiService::class.java)
+    fun provideApiService(retrofit: Retrofit): PokemonApi{
+       return retrofit.create(PokemonApi::class.java)
     }
 
 }
