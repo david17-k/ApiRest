@@ -68,4 +68,5 @@ dependencies {
     implementation(libs.material.icons.extended)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 }

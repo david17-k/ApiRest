@@ -7,7 +7,8 @@ data class PokemonResponse(
 
 data class PokemonDto(
     val name: String,
-    val url: String
+    val url: String,
+
 ) {
     val id: Int
         get() = url.trimEnd('/')
