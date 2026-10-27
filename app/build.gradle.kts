@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.devtools.ksp)
 }
 
 android {
@@ -53,4 +55,8 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.data.store)
 }

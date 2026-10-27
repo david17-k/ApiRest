@@ -9,7 +9,10 @@ activityCompose = "1.13.0"
 kotlin = "2.2.10"
 composeBom = "2026.02.01"
 retrofit = "3.0.0"
-
+hiltAndroid = "2.60.1"
+hiltNavigationCompose = "1.4.0"
+ksp = "2.3.6" # Desde KSP 2.3.0 la versión ya no va atada a la versión de Kotlin
+dataStore = "1.2.1"
 
 
 [libraries]
@@ -29,8 +32,14 @@ androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-te
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
+androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
+hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltAndroid" }
+data-store = { module = "androidx.datastore:datastore-preferences", version.ref="dataStore" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-
+hilt-android = { id="com.google.dagger.hilt.android", version.ref="hiltAndroid"}
+devtools-ksp = { id="com.google.devtools.ksp", version.ref="ksp" }
