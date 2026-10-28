@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">ApiRest</string>
-        <string name="reports_loaded">Reportes cargados correctamente</string>
+        <string name="reports_loaded">Pokémon cargados correctamente</string>
     <string name="reports_loaded_error">Error al cargar los datos</string>
-    <string name="txt_retry">Recaegar</string>
+    <string name="txt_retry">Reintentar</string>
 </resources>

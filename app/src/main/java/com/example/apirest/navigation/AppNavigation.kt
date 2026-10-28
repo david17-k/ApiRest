@@ -8,6 +8,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import com.example.apirest.features.detail.DetailScreen
 import com.example.apirest.features.pokemon.PokemonScreen
 
 
@@ -26,7 +28,17 @@ fun AppNavifation(
         ){
             composable<MainRoutes.Pokemon>{
                 PokemonScreen(
+                    onPokemonClick = { name ->
+                        navController.navigate(MainRoutes.Detail(name))
+                    }
+                )
+            }
 
+            composable<MainRoutes.Detail> { backStackEntry ->
+                val detail = backStackEntry.toRoute<MainRoutes.Detail>()
+                DetailScreen(
+                    name = detail.name,
+                    onBack = { navController.popBackStack() }
                 )
             }
 
