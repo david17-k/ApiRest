@@ -18,12 +18,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
 // El estado de la pantalla: la lista, el filtro elegido y el resultado de la petición
 data class PokemonUiState(
     val selectedType: String? = null,
     val selectedGeneration: Int? = null,
-    val result: RequestResult? = null
+    val filteredPokemon: List<Pokemon>? = null,
+    val isFiltering: Boolean = false,
+    val filterError: String? = null
 )
 
 @HiltViewModel
@@ -48,35 +49,113 @@ class PokemonViewModel @Inject constructor(
 
     // Lista sin filtros
     fun loadPokemon() {
-        _uiState.update { it.copy(selectedType = null, selectedGeneration = null) }
-
+        _uiState.value = PokemonUiState()
     }
 
     // Filtra por tipo (Ej: fire, water)
     fun filterByType(type: String) {
-        _uiState.update { it.copy(selectedType = type, selectedGeneration = null) }
+        _uiState.update {
+            it.copy(
+                selectedType = type,
+                selectedGeneration = null,
+                filteredPokemon = null,
+                isFiltering = true,
+                filterError = null
+            )
+        }
 
+        viewModelScope.launch {
+            try {
+                val result = getPokemonByTypeUseCase(type)
+
+                _uiState.update {
+                    if (it.selectedType == type) {
+                        it.copy(
+                            filteredPokemon = result,
+                            isFiltering = false
+                        )
+                    } else {
+                        it
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    if (it.selectedType == type) {
+                        it.copy(
+                            isFiltering = false,
+                            filterError = e.localizedMessage
+                                ?: "Error al filtrar por tipo"
+                        )
+                    } else {
+                        it
+                    }
+                }
+            }
+        }
     }
 
     // Filtra por generación (Ej: 1, 2, 3)
     fun filterByGeneration(generation: Int) {
-        _uiState.update { it.copy(selectedType = null, selectedGeneration = generation) }
+        _uiState.update {
+            it.copy(
+                selectedType = null,
+                selectedGeneration = generation,
+                filteredPokemon = null,
+                isFiltering = true,
+                filterError = null
+            )
+        }
 
-    }
+        viewModelScope.launch {
+            try {
+                val result =
+                    getPokemonByGenerationUseCase(generation)
 
-    // Vuelve a hacer la última petición (para el botón de reintentar)
-    fun retry() {
-        val type = _uiState.value.selectedType
-        val generation = _uiState.value.selectedGeneration
-        if (type != null) {
-            filterByType(type)
-        } else if (generation != null) {
-            filterByGeneration(generation)
-        } else {
-            loadPokemon()
+                _uiState.update {
+                    if (it.selectedGeneration == generation) {
+                        it.copy(
+                            filteredPokemon = result,
+                            isFiltering = false
+                        )
+                    } else {
+                        it
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    if (it.selectedGeneration == generation) {
+                        it.copy(
+                            isFiltering = false,
+                            filterError = e.localizedMessage
+                                ?: "Error al filtrar por generación"
+                        )
+                    } else {
+                        it
+                    }
+                }
+            }
         }
     }
 
+
+    // Vuelve a hacer la última petición (para el botón de reintentar)
+    // Reintentar el filtro activo
+    fun retry() {
+        val state = _uiState.value
+
+        when {
+            state.selectedType != null ->
+                filterByType(state.selectedType)
+
+            state.selectedGeneration != null ->
+                filterByGeneration(state.selectedGeneration)
+
+            else -> loadPokemon()
+        }
+    }
+}
+
     // Hace la petición y guarda el resultado en el estado
 
-}
+
+

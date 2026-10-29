@@ -63,10 +63,20 @@ data class TypePokemonSlot(
 
 // ---------- GET generation/{id} ----------
 
+
 data class GenerationResponse(
-    // En el JSON el campo se llama "pokemon_species"
     @SerializedName("pokemon_species")
-    val pokemonSpecies: List<PokemonDto>
+    val pokemonSpecies: List<PokemonSpeciesDto>
 )
+
+data class PokemonSpeciesDto(
+    val name: String,
+    val url: String
+) {
+    val id: Int
+        get() = url.trimEnd('/')
+            .substringAfterLast('/')
+            .toIntOrNull() ?: 0
+}
 
 

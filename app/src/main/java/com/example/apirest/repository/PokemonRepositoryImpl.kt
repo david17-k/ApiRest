@@ -47,17 +47,39 @@ class PokemonRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getPokemonByType(type: String): List<Pokemon> {
-        return apiService.getPokemonByType(type).pokemon.map { slot ->
-            toPokemon(slot.pokemon)
-        }
+        val response = apiService.getPokemonByType(type.lowercase())
+
+        return response.pokemon.map { slot ->
+            val pokemonDto = slot.pokemon
+
+            Pokemon(
+                id = pokemonDto.id,
+                name = pokemonDto.name,
+                photoUrl = pokemonDto.photoUrl
+            )
+        }.sortedBy { it.id }
     }
 
-    override suspend fun getPokemonByGeneration(generation: Int): List<Pokemon> {
-        return apiService.getPokemonByGeneration(generation).pokemonSpecies
-            .map { pokemonDto -> toPokemon(pokemonDto) }
-            .sortedBy { pokemon -> pokemon.id }
-    }
+    override suspend fun getPokemonByGeneration(
+        generation: Int
+    ): List<Pokemon> {
+        val response = apiService.getPokemonByGeneration(generation)
 
+        return response.pokemonSpecies
+            .map { species ->
+                val id = species.url
+                    .trimEnd('/')
+                    .substringAfterLast('/')
+                    .toIntOrNull() ?: 0
+
+                Pokemon(
+                    id = id,
+                    name = species.name,
+                    photoUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png"
+                )
+            }
+            .sortedBy { it.id }
+    }
     // Convierte el DTO de la API al modelo de dominio
     private fun toPokemon(pokemonDto: PokemonDto): Pokemon {
         return Pokemon(

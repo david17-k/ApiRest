@@ -15,7 +15,7 @@ interface PokemonApi {
     // Lista de Pokémon
     @GET("pokemon")
     suspend fun getPokemon(
-        @Query("limit") limit: Int = 100,
+        @Query("limit") limit: Int = 20,
         @Query("offset") offset: Int = 0
     ): PokemonResponse
 

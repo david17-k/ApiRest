@@ -119,22 +119,14 @@ fun PokemonScreen(
             }
 
             items(pokemonTypes) { type ->
-
                 FilterChip(
                     selected = state.selectedType == type,
-                    onClick = {
-                        viewModel.filterByType(type)
-                    },
-                    label = {
-                        Text(
-                            type.replaceFirstChar {
-                                it.uppercase()
-                            }
-                        )
-                    }
+                    onClick = { viewModel.filterByType(type) },
+                    label = { Text(type.replaceFirstChar { it.uppercase() }) }
                 )
             }
         }
+
 
         Text(
             text = "Generación",
@@ -148,7 +140,6 @@ fun PokemonScreen(
         ) {
 
             items(pokemonGenerations) { generation ->
-
                 FilterChip(
                     selected = state.selectedGeneration == generation,
                     onClick = {
@@ -160,102 +151,166 @@ fun PokemonScreen(
                 )
             }
         }
-
-        when (val refreshState = pokemonList.loadState.refresh) {
-
-            is LoadState.Loading -> {
-
+        when {
+            // 1. Mostrar el indicador mientras se consulta un filtro
+            state.isFiltering -> {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
                 }
             }
 
-            is LoadState.Error -> {
-
+            // 2. Mostrar errores de los filtros
+            state.filterError != null -> {
                 Column(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-
                     Text(
-                        text = refreshState.error.localizedMessage
-                            ?: "Error al cargar Pokémon",
+                        text = state.filterError ?: "Error al filtrar",
                         color = MaterialTheme.colorScheme.error
                     )
 
                     Button(
-                        onClick = {
-                            pokemonList.retry()
-                        }
+                        onClick = { viewModel.retry() }
                     ) {
                         Text("Reintentar")
                     }
                 }
             }
 
-            is LoadState.NotLoading -> {
+            // 3. Mostrar los Pokémon filtrados
+            state.selectedType != null ||
+                    state.selectedGeneration != null -> {
 
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
                     contentPadding = PaddingValues(
                         horizontal = 16.dp,
                         vertical = 8.dp
                     ),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    items(state.filteredPokemon.orEmpty()) { pokemon ->
+                        PokemonItem(
+                            pokemon = pokemon,
+                            onClick = {
+                                onPokemonClick(pokemon.name)
+                            }
+                        )
+                    }
 
-                    items(
-                        count = pokemonList.itemCount
-                    ) { index ->
-
-                        pokemonList[index]?.let { pokemon ->
-
-                            PokemonItem(
-                                pokemon = pokemon,
-                                onClick = {
-                                    onPokemonClick(
-                                        pokemon.name
-                                    )
-                                }
+                    if (state.filteredPokemon?.isEmpty() == true) {
+                        item {
+                            Text(
+                                text = "No se encontraron Pokémon.",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                textAlign = TextAlign.Center
                             )
                         }
                     }
+                }
+            }
 
-                    item {
+            // 4. Si no hay filtro, conservar la lista paginada original
+            else -> {
+                when (val refreshState = pokemonList.loadState.refresh) {
+                    is LoadState.Loading -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
 
-                        when (pokemonList.loadState.append) {
+                    is LoadState.Error -> {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = refreshState.error.localizedMessage
+                                    ?: "Error al cargar Pokémon",
+                                color = MaterialTheme.colorScheme.error
+                            )
 
-                            is LoadState.Loading -> {
+                            Button(
+                                onClick = { pokemonList.retry() }
+                            ) {
+                                Text("Reintentar")
+                            }
+                        }
+                    }
 
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator()
+                    is LoadState.NotLoading -> {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                            contentPadding = PaddingValues(
+                                horizontal = 16.dp,
+                                vertical = 8.dp
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(pokemonList.itemCount) { index ->
+                                pokemonList[index]?.let { pokemon ->
+                                    PokemonItem(
+                                        pokemon = pokemon,
+                                        onClick = {
+                                            onPokemonClick(pokemon.name)
+                                        }
+                                    )
                                 }
                             }
 
-                            is LoadState.Error -> {
-
-                                Button(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    onClick = {
-                                        pokemonList.retry()
+                            item {
+                                when (pokemonList.loadState.append) {
+                                    is LoadState.Loading -> {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(16.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            CircularProgressIndicator()
+                                        }
                                     }
-                                ) {
-                                    Text("Reintentar")
+
+                                    is LoadState.Error -> {
+                                        Button(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(16.dp),
+                                            onClick = {
+                                                pokemonList.retry()
+                                            }
+                                        ) {
+                                            Text("Reintentar")
+                                        }
+                                    }
+
+                                    else -> Unit
                                 }
                             }
-
-                            else -> Unit
                         }
                     }
                 }
