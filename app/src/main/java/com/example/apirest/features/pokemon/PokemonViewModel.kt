@@ -2,6 +2,7 @@ package com.example.apirest.features.pokemon
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.cachedIn
 import com.example.apirest.R
 import com.example.apirest.core.util.NetworkMonitor
 import com.example.apirest.core.util.RequestResult
@@ -20,7 +21,6 @@ import kotlinx.coroutines.launch
 
 // El estado de la pantalla: la lista, el filtro elegido y el resultado de la petición
 data class PokemonUiState(
-    val pokemonList: List<Pokemon> = emptyList(),
     val selectedType: String? = null,
     val selectedGeneration: Int? = null,
     val result: RequestResult? = null
@@ -34,6 +34,7 @@ class PokemonViewModel @Inject constructor(
     private val resources: ResourceProvider,
     networkMonitor: NetworkMonitor
 ) : ViewModel() {
+   val pokemonList=getPokemonListUseCase().cachedIn(viewModelScope)
 
     private val _uiState = MutableStateFlow(PokemonUiState())
     val uiState: StateFlow<PokemonUiState> = _uiState.asStateFlow()
@@ -48,19 +49,19 @@ class PokemonViewModel @Inject constructor(
     // Lista sin filtros
     fun loadPokemon() {
         _uiState.update { it.copy(selectedType = null, selectedGeneration = null) }
-        request { getPokemonListUseCase() }
+
     }
 
     // Filtra por tipo (Ej: fire, water)
     fun filterByType(type: String) {
         _uiState.update { it.copy(selectedType = type, selectedGeneration = null) }
-        request { getPokemonByTypeUseCase(type) }
+
     }
 
     // Filtra por generación (Ej: 1, 2, 3)
     fun filterByGeneration(generation: Int) {
         _uiState.update { it.copy(selectedType = null, selectedGeneration = generation) }
-        request { getPokemonByGenerationUseCase(generation) }
+
     }
 
     // Vuelve a hacer la última petición (para el botón de reintentar)
@@ -77,26 +78,5 @@ class PokemonViewModel @Inject constructor(
     }
 
     // Hace la petición y guarda el resultado en el estado
-    private fun request(call: suspend () -> List<Pokemon>) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(result = RequestResult.Loading) }
-            try {
-                val list = call()
-                _uiState.update {
-                    it.copy(
-                        pokemonList = list,
-                        result = RequestResult.Success(resources.getString(R.string.reports_loaded))
-                    )
-                }
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        result = RequestResult.Failure(
-                            e.message ?: resources.getString(R.string.reports_loaded_error)
-                        )
-                    )
-                }
-            }
-        }
-    }
+
 }

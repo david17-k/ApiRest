@@ -1,9 +1,16 @@
 package com.example.apirest.repository
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.map
 import com.example.apirest.model.Pokemon
 import com.example.apirest.model.PokemonDetail
-import com.example.apirest.model.PokemonDto
+import com.example.apirest.data.remote.PokemonDto
+import com.example.apirest.navigation.PokemonPaginSource
 import com.example.apirest.service.PokemonApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 
@@ -11,9 +18,19 @@ class PokemonRepositoryImpl @Inject constructor(
     private val apiService: PokemonApi
 ) : PokemonRepository {
 
-    override suspend fun getPokemon(): List<Pokemon> {
-        return apiService.getPokemon().results.map { pokemonDto ->
-            toPokemon(pokemonDto)
+    override fun getPokemon(): Flow<PagingData<Pokemon>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 20
+            ),
+            pagingSourceFactory = {
+                PokemonPaginSource(apiService)
+            }
+        ).flow.map { pagingData ->
+
+            pagingData.map { dto ->
+                dto.toDomain()
+            }
         }
     }
 

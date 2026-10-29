@@ -1,6 +1,8 @@
-package com.example.apirest.model
+package com.example.apirest.data.remote
 
+import com.example.apirest.model.Pokemon
 import com.google.gson.annotations.SerializedName
+import kotlin.toString
 
 // ---------- GET pokemon?offset={offset}&limit={limit} ----------
 
@@ -14,6 +16,7 @@ data class PokemonDto(
     val url: String,
 
 ) {
+
     val id: Int
         get() = url.trimEnd('/')
             .substringAfterLast('/')
@@ -21,6 +24,13 @@ data class PokemonDto(
 
     val photoUrl: String
         get() = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png"
+
+
+    fun toDomain(): Pokemon = Pokemon(
+        id = id,
+        name = name,
+        photoUrl=photoUrl
+    )
 }
 
 // ---------- GET pokemon/{idOrName} ----------
@@ -58,3 +68,5 @@ data class GenerationResponse(
     @SerializedName("pokemon_species")
     val pokemonSpecies: List<PokemonDto>
 )
+
+

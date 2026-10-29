@@ -1,10 +1,10 @@
 package com.example.apirest.service
 
 
-import com.example.apirest.model.GenerationResponse
-import com.example.apirest.model.PokemonDetailDto
-import com.example.apirest.model.PokemonResponse
-import com.example.apirest.model.TypeResponse
+import com.example.apirest.data.remote.GenerationResponse
+import com.example.apirest.data.remote.PokemonDetailDto
+import com.example.apirest.data.remote.PokemonResponse
+import com.example.apirest.data.remote.TypeResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -15,7 +15,7 @@ interface PokemonApi {
     // Lista de Pokémon
     @GET("pokemon")
     suspend fun getPokemon(
-        @Query("limit") limit: Int = 20,
+        @Query("limit") limit: Int = 100,
         @Query("offset") offset: Int = 0
     ): PokemonResponse
 
